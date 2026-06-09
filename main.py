@@ -192,3 +192,300 @@ class Speler:
             (self.rect.x - 12, self.rect.y - 12)
         )
 
+# =========================
+# VIJAND KLASSE
+# =========================
+
+class Vijand:
+
+    def __init__(self, x, y):
+
+        self.afbeelding = pygame.image.load(
+            r"assets\tractor_player.png"
+        ).convert_alpha()
+
+        self.afbeelding = pygame.transform.scale(
+            self.afbeelding,
+            (80,80)
+        )
+
+        self.rect = pygame.Rect(x, y, 60, 60)
+
+        self.snelheid = VIJAND_SNELHEID
+
+    def beweeg(self, speler):
+
+        vx = speler.rect.centerx - self.rect.centerx
+        vy = speler.rect.centery - self.rect.centery
+
+        afstand = math.hypot(vx, vy)#berekent de afstand tussen de speler en vijand, gevonden in een tutorial
+
+        if afstand != 0:
+
+            vx /= afstand
+            vy /= afstand
+
+        self.rect.x += int(vx * self.snelheid)
+        self.rect.y += int(vy * self.snelheid)
+
+    def teken(self):
+
+        screen.blit(
+            self.afbeelding,
+            (self.rect.x - 20, self.rect.y - 20)
+        )
+
+# =========================
+# MELKFLES KLASSE
+# =========================
+
+class Melkfles:
+
+    def __init__(self):
+
+        self.afbeelding = pygame.image.load(
+            r"assets\milk.png"
+        ).convert_alpha()
+
+        self.afbeelding = pygame.transform.scale(
+            self.afbeelding,
+            (40,40)
+        )
+
+        while True:
+
+            x = random.randint(80, 940)
+            y = random.randint(80, 940)
+
+            self.rect = pygame.Rect(x, y, 30, 30)
+
+            geblokkeerd = False
+
+            for muur in muren:
+
+                if self.rect.colliderect(muur):
+                    geblokkeerd = True
+
+            if not geblokkeerd:
+                break
+
+    def teken(self):
+
+        screen.blit(
+            self.afbeelding,
+            self.rect
+        )
+
+# =========================
+# SPEL KLASSE
+# =========================
+
+class Spel:
+
+    def __init__(self):
+
+        self.level = 1
+
+        self.score = 0
+
+        self.running = True
+
+        self.speler = Speler(500, 900)
+
+        self.vijand = Vijand(500, 100)
+
+        self.melkflessen = []
+
+        self.maak_melkflessen(10)
+    
+
+    def run(self):
+
+        while self.running:
+
+            clock.tick(60)
+
+            for event in pygame.event.get():
+
+                if event.type == pygame.QUIT:
+                    self.running = False
+
+            self.update()
+
+            self.teken()
+
+        pygame.quit()
+
+    # =====================
+    # MELKFLESSEN MAKEN
+    # =====================
+
+    def maak_melkflessen(self, aantal):
+
+        self.melkflessen.clear()
+
+        for i in range(aantal):
+
+            self.melkflessen.append(
+                Melkfles()
+            )
+
+    # =====================
+    # LEVEL 2
+    # =====================
+
+    def start_level_2(self):
+
+        speel_video(
+            r"assets\Aura of T.mp4",
+            r"assets\muziek.mp3"
+        )
+
+        pygame.mixer.music.stop()
+
+        pygame.mixer.music.load(
+            r"assets\All Of The Lights.mp3"
+        )
+
+        pygame.mixer.music.play(-1)
+
+        # nieuwe speler afbeelding
+        self.speler.afbeelding = pygame.image.load(
+            r"assets\Kirk.png"
+        ).convert_alpha()
+
+        self.speler.afbeelding = pygame.transform.scale(
+            self.speler.afbeelding,
+            (64,64)
+        )
+
+        # nieuwe vijand afbeelding
+        self.vijand.afbeelding = pygame.image.load(# Verandert de afbeelding van de vijand, van anton naar kanye.
+            r"assets\olive delights.png"
+        ).convert_alpha()
+
+        self.vijand.afbeelding = pygame.transform.scale(
+            self.vijand.afbeelding,
+            (100,100)
+        )
+
+        # reset posities
+        self.speler.rect.x = 500
+        self.speler.rect.y = 900
+
+        self.vijand.rect.x = 500
+        self.vijand.rect.y = 100
+
+        # sneller maken
+        self.vijand.snelheid = 4
+
+        # nieuwe melkflessen
+        self.maak_melkflessen(15)
+
+        self.level = 2
+
+    # =====================
+    # UPDATE
+    # =====================
+
+    def update(self):
+
+        self.speler.beweeg()
+
+        self.vijand.beweeg(self.speler)
+
+        # melkflessen pakken
+        for fles in self.melkflessen[:]:
+
+            if self.speler.rect.colliderect(fles.rect):
+
+                self.melkflessen.remove(fles)
+
+                self.score += 25
+
+                tung_geluid.play()
+
+        # level systeem
+        if len(self.melkflessen) == 0 and self.level == 1:
+
+            self.start_level_2()
+
+        elif len(self.melkflessen) == 0 and self.level == 2:
+
+            print("JE HEBT GEWONNEN!")
+
+            self.running = False
+
+        # game over
+        if self.speler.rect.colliderect(self.vijand.rect):
+
+            print("GAME OVER")
+
+            self.running = False
+
+    # =====================
+    # TEKENEN
+    # =====================
+
+    def teken(self):
+
+        screen.blit(achtergrond, (0,0))
+
+        # melkflessen
+        for fles in self.melkflessen:
+
+            fles.teken()
+
+        # speler
+        self.speler.teken()
+
+        # vijand
+        self.vijand.teken()
+
+        # score
+        score_tekst = font.render(
+            f"Score: {self.score}",
+            True,
+            (255,255,255)
+        )
+
+        screen.blit(score_tekst, (20,20))
+
+        # level
+        level_tekst = font.render(
+            f"Level: {self.level}",
+            True,
+            (255,255,0)
+        )
+
+        screen.blit(level_tekst, (20,70))
+
+        pygame.display.flip()
+
+    # =====================
+    # GAME LOOP
+    # =====================
+
+    def run(self):
+
+        while self.running:
+
+            clock.tick(60)
+
+            for event in pygame.event.get():
+
+                if event.type == pygame.QUIT:
+                    self.running = False
+
+            self.update()
+
+            self.teken()
+
+        pygame.quit()
+
+# =========================
+# START SPEL
+# =========================
+
+spel = Spel()
+spel.run()
