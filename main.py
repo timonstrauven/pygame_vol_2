@@ -7,14 +7,14 @@ pygame.init()
 pygame.mixer.init()
 
 # =========================
-# SETTINGS
+# INSTELLINGEN
 # =========================
 
 WIDTH = 1024
 HEIGHT = 1024
 
-PLAYER_SPEED = 5
-ENEMY_SPEED = 2
+SPELER_SNELHEID = 5
+VIJAND_SNELHEID = 2
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Anton Tractor Supermarket")
@@ -24,15 +24,15 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont("Arial", 40)
 
 # =========================
-# VIDEO FUNCTION
+# VIDEO FUNCTIE
 # =========================
 
-def play_video(video_path, audio_path):
+def speel_video(video_pad, audio_pad):
 
-    pygame.mixer.music.load(audio_path)
+    pygame.mixer.music.load(audio_pad)
     pygame.mixer.music.play()
 
-    clip = VideoFileClip(video_path)
+    clip = VideoFileClip(video_pad)
 
     for frame in clip.iter_frames(fps=30, dtype="uint8"):
 
@@ -66,7 +66,7 @@ def play_video(video_path, audio_path):
 # INTRO VIDEO
 # =========================
 
-play_video(
+speel_video(
     r"assets\ANTON 5sec.mp4",
     r"assets\muziek.mp3"
 )
@@ -77,67 +77,28 @@ pygame.mixer.music.play(-1)
 # MAP
 # =========================
 
-bg = pygame.image.load(
+achtergrond = pygame.image.load(
     r"assets\supermarket_map.png"
 ).convert()
 
-bg = pygame.transform.scale(
-    bg,
+achtergrond = pygame.transform.scale(
+    achtergrond,
     (WIDTH, HEIGHT)
 )
 
 # =========================
-# LEVEL 1 PLAYER = SAHUR2
+# GELUID
 # =========================
 
-player_img = pygame.image.load(
-    r"assets\Sahur2.webp"
-).convert_alpha()
-
-player_img = pygame.transform.scale(
-    player_img,
-    (64,64)
-)
-
-# =========================
-# LEVEL 1 ENEMY = TRACTOR
-# =========================
-
-enemy_img = pygame.image.load(
-    r"assets\tractor_player.png"
-).convert_alpha()
-
-enemy_img = pygame.transform.scale(
-    enemy_img,
-    (80,80)
-)
-
-# =========================
-# MELKFLES
-# =========================
-
-milk_img = pygame.image.load(
-    r"assets\milk.png"
-).convert_alpha()
-
-milk_img = pygame.transform.scale(
-    milk_img,
-    (40,40)
-)
-
-# =========================
-# GELUIDEN
-# =========================
-
-tung_sound = pygame.mixer.Sound(
+tung_geluid = pygame.mixer.Sound(
     r"assets\The Tung.mp3"
 )
 
 # =========================
-# COLLISION SCHAPPEN
+# MUREN
 # =========================
 
-walls = [
+muren = [
 
     pygame.Rect(130,120,250,70),
     pygame.Rect(650,120,250,70),
@@ -158,275 +119,76 @@ walls = [
 ]
 
 # =========================
-# PLAYER HITBOX
+# SPELER KLASSE
 # =========================
 
-player = pygame.Rect(
-    500,
-    900,
-    40,
-    40
-)
+class Speler:
 
-# =========================
-# ENEMY HITBOX
-# =========================
+    def __init__(self, x, y):
 
-enemy = pygame.Rect(
-    500,
-    100,
-    60,
-    60
-)
-
-# =========================
-# MELKFLESJES
-# =========================
-
-def spawn_bottles(amount):
-
-    bottles = []
-
-    for i in range(amount):
-
-        while True:
-
-            x = random.randint(80, 940)
-            y = random.randint(80, 940)
-
-            bottle = pygame.Rect(x, y, 30, 30)
-
-            blocked = False
-
-            for wall in walls:
-
-                if bottle.colliderect(wall):
-                    blocked = True
-
-            if not blocked:
-
-                bottles.append(bottle)
-
-                break
-
-    return bottles
-
-milk_bottles = spawn_bottles(10)
-
-# =========================
-# SCORE
-# =========================
-
-score = 0
-
-# =========================
-# LEVEL SYSTEM
-# =========================
-
-level = 1
-
-# =========================
-# GAME LOOP
-# =========================
-
-running = True
-
-while running:
-
-    clock.tick(60)
-
-    # =====================
-    # EVENTS
-    # =====================
-
-    for event in pygame.event.get():
-
-        if event.type == pygame.QUIT:
-            running = False
-
-    # =====================
-    # PLAYER MOVEMENT
-    # =====================
-
-    keys = pygame.key.get_pressed()
-
-    dx = 0
-    dy = 0
-
-    if keys[pygame.K_LEFT]:
-        dx = -PLAYER_SPEED
-
-    if keys[pygame.K_RIGHT]:
-        dx = PLAYER_SPEED
-
-    if keys[pygame.K_UP]:
-        dy = -PLAYER_SPEED
-
-    if keys[pygame.K_DOWN]:
-        dy = PLAYER_SPEED
-
-    # horizontale collision
-    player.x += dx
-
-    for wall in walls:
-
-        if player.colliderect(wall):
-            player.x -= dx
-
-    # verticale collision
-    player.y += dy
-
-    for wall in walls:
-
-        if player.colliderect(wall):
-            player.y -= dy
-
-    # binnen scherm houden
-    player.x = max(0, min(WIDTH - player.width, player.x))
-    player.y = max(0, min(HEIGHT - player.height, player.y))
-
-    # =====================
-    # ENEMY AI
-    # =====================
-
-    vx = player.centerx - enemy.centerx
-    vy = player.centery - enemy.centery
-
-    distance = math.hypot(vx, vy)
-
-    if distance != 0:
-
-        vx /= distance
-        vy /= distance
-
-    enemy.x += int(vx * ENEMY_SPEED)
-    enemy.y += int(vy * ENEMY_SPEED)
-
-    # =====================
-    # MELKFLESJES
-    # =====================
-
-    for bottle in milk_bottles[:]:
-
-        if player.colliderect(bottle):
-
-            milk_bottles.remove(bottle)
-
-            score += 25
-
-            tung_sound.play()
-
-    # =====================
-    # LEVEL 2
-    # =====================
-
-    if len(milk_bottles) == 0 and level == 1:
-
-        # level 1 eindvideo
-        play_video(
-            r"assets\Aura of T.mp4",
-            r"assets\muziek.mp3"
-        )
-
-        # nieuwe muziek
-        pygame.mixer.music.stop()
-
-        pygame.mixer.music.load(
-            r"assets\All Of The Lights.mp3"
-        )
-
-        pygame.mixer.music.play(-1)
-
-        # LEVEL 2 PLAYER = KIRK
-        player_img = pygame.image.load(
-            r"assets\Kirk.png"
+        self.afbeelding = pygame.image.load(
+            r"assets\Sahur2.webp"
         ).convert_alpha()
 
-        player_img = pygame.transform.scale(
-            player_img,
+        self.afbeelding = pygame.transform.scale(
+            self.afbeelding,
             (64,64)
         )
 
-        # LEVEL 2 ENEMY = OLIVE DELIGHTS
-        enemy_img = pygame.image.load(
-            r"assets\olive delights.png"
-        ).convert_alpha()
+        self.rect = pygame.Rect(x, y, 40, 40)
 
-        enemy_img = pygame.transform.scale(
-            enemy_img,
-            (100,100)
+        self.snelheid = SPELER_SNELHEID
+
+    def beweeg(self):
+
+        toetsen = pygame.key.get_pressed()
+
+        dx = 0
+        dy = 0
+
+        if toetsen[pygame.K_LEFT]:
+            dx = -self.snelheid
+
+        if toetsen[pygame.K_RIGHT]:
+            dx = self.snelheid
+
+        if toetsen[pygame.K_UP]:
+            dy = -self.snelheid
+
+        if toetsen[pygame.K_DOWN]:
+            dy = self.snelheid
+
+        # horizontale collision
+        self.rect.x += dx
+
+        for muur in muren:
+
+            if self.rect.colliderect(muur):
+                self.rect.x -= dx
+
+        # verticale collision
+        self.rect.y += dy
+
+        for muur in muren:
+
+            if self.rect.colliderect(muur):
+                self.rect.y -= dy
+
+        # binnen scherm houden
+        self.rect.x = max(
+            0,
+            min(WIDTH - self.rect.width, self.rect.x)
         )
 
-        # speler resetten
-        player.x = 500
-        player.y = 900
+        self.rect.y = max(
+            0,
+            min(HEIGHT - self.rect.height, self.rect.y)
+        )
 
-        # enemy resetten
-        enemy.x = 500
-        enemy.y = 100
-
-        # moeilijker
-        ENEMY_SPEED = 4
-
-        # nieuwe melkflesjes
-        milk_bottles = spawn_bottles(15)
-
-        level = 2
-
-    # =====================
-    # GAME OVER
-    # =====================
-
-    if player.colliderect(enemy):
-
-        print("GAME OVER")
-
-        running = False
-
-    # =====================
-    # DRAW
-    # =====================
-
-    screen.blit(bg, (0,0))
-
-    # melkflesjes
-    for bottle in milk_bottles:
+    def teken(self):
 
         screen.blit(
-            milk_img,
-            bottle
+            self.afbeelding,
+            (self.rect.x - 12, self.rect.y - 12)
         )
 
-    # speler
-    screen.blit(
-        player_img,
-        (player.x - 12, player.y - 12)
-    )
-
-    # enemy
-    screen.blit(
-        enemy_img,
-        (enemy.x - 20, enemy.y - 20)
-    )
-
-    # score
-    score_text = font.render(
-        f"Score: {score}",
-        True,
-        (255,255,255)
-    )
-
-    screen.blit(score_text, (20,20))
-
-    # level
-    level_text = font.render(
-        f"Level: {level}",
-        True,
-        (255,255,0)
-    )
-
-    screen.blit(level_text, (20,70))
-
-    pygame.display.flip()
-
-pygame.quit()
