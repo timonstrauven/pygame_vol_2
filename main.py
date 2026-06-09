@@ -74,18 +74,30 @@ speel_video(
 pygame.mixer.music.play(-1)
 
 # =========================
-# MAP
+# MAP SPEL 1
 # =========================
 
-achtergrond = pygame.image.load(
+achtergrond_spel_1 = pygame.image.load(
     r"assets\supermarket_map.png"
 ).convert()
 
-achtergrond = pygame.transform.scale(
-    achtergrond,
+achtergrond_spel_1 = pygame.transform.scale(
+    achtergrond_spel_1,
     (WIDTH, HEIGHT)
 )
 
+# =========================
+# MAP SPEL 2
+# =========================
+
+achtergrond_spel_2 = pygame.image.load(
+    r"assets\backrooms_map.png"
+).convert()
+
+achtergrond_spel_2 = pygame.transform.scale(
+    achtergrond_spel_2,
+    (WIDTH, HEIGHT)
+)
 # =========================
 # GELUID
 # =========================
@@ -95,10 +107,10 @@ tung_geluid = pygame.mixer.Sound(
 )
 
 # =========================
-# MUREN
+# MUREN SPEL 1
 # =========================
 
-muren = [
+muren_spel_1 = [
 
     pygame.Rect(130,120,250,70),
     pygame.Rect(650,120,250,70),
@@ -161,7 +173,7 @@ class Speler:
         # horizontale collision
         self.rect.x += dx
 
-        for muur in muren:
+        for muur in muren_spel_1:
 
             if self.rect.colliderect(muur):
                 self.rect.x -= dx
@@ -169,7 +181,7 @@ class Speler:
         # verticale collision
         self.rect.y += dy
 
-        for muur in muren:
+        for muur in muren_spel_1:
 
             if self.rect.colliderect(muur):
                 self.rect.y -= dy
@@ -261,7 +273,7 @@ class Melkfles:
 
             geblokkeerd = False
 
-            for muur in muren:
+            for muur in muren_spel_1:
 
                 if self.rect.colliderect(muur):
                     geblokkeerd = True
@@ -429,7 +441,7 @@ class Spel:
 
     def teken(self):
 
-        screen.blit(achtergrond, (0,0))
+        screen.blit(achtergrond_spel_1, (0,0))
 
         # melkflessen
         for fles in self.melkflessen:
