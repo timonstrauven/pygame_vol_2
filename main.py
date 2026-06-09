@@ -1,10 +1,10 @@
 import pygame
 import math
 import random
-from moviepy import VideoFileClip
+from moviepy import VideoFileClip# importeert de klasse VideoFileClip van module moviepy zodat video's kunnen worden ingeladen
 
 pygame.init()
-pygame.mixer.init()
+pygame.mixer.init()# maakt het afspelen van het geluid mogelijk
 
 # =========================
 # INSTELLINGEN
@@ -59,7 +59,7 @@ def speel_video(video_pad, audio_pad):
 
     clip.close()
 
-    screen.fill((0,0,0))
+    screen.fill((0,0,0))#maakt het scherm zwart bij starten
     pygame.display.flip()
 
 # =========================
